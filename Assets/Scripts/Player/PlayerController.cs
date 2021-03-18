@@ -22,8 +22,6 @@ public class PlayerController : MonoBehaviour
         horizontalInput = Input.GetAxis("Horizontal");
         verticalInput = Input.GetAxis("Vertical");
 
-        Debug.Log(Time.deltaTime);
-
         //move duck forward
         transform.Translate(Vector3.forward * Time.deltaTime * speed * verticalInput);
 
