@@ -21,7 +21,7 @@ public class ShootingStars : MonoBehaviour
 
     }
 
-    void SpawnShootingStar()
+    public void SpawnShootingStar()
     {
         float randXPos = Random.Range(-xPosRange, xPosRange);
         int shootingStarIndex = Random.Range(0, shootingStar.Length);

@@ -4,28 +4,145 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float speed = 15.0f;
-    public float turnSpeed = 15.0f;
+   // Used script from a Brackeys video but adjusted to use the Rigidbody instead
+    // of a character controller alongside Cinemachine for the camera.
+    // Link: https://www.youtube.com/watch?v=4HpC--2iowE
+    // Jump is the same as the Lesson Unit 3 but with a different Ground detection, using Physics.CheckCapsule
+    // With help using Omnirift's video on jump and ground detection
+    // Link: https://www.youtube.com/watch?v=vdOFUFMiPDU
 
-    private float horizontalInput;
-    private float verticalInput;
+    public Rigidbody rb;
+    public CapsuleCollider col;
+    public Transform cam;
+    private Animator animPlayer;
+    public DepleteOxygen depleteOxygen;
 
-    // Start is called before the first frame update
+    public ParticleSystem blackHoleParticle;
+    private AudioSource asPlayer;
+
+    public LayerMask groundLayers;
+
+    public float walkSpeed = 6.0f;
+    public float runSpeed = 10.0f;
+    public float turnSmoothTime = 0.1f;
+    public float jumpForce = 7.0f;
+
+    float turnSmoothVelocity;
+    public bool hasBlackHole = false;
+    public bool gameOver = false;
+
     void Start()
     {
+        rb = GetComponent<Rigidbody>();
+        col = GetComponent<CapsuleCollider>();
+        animPlayer = GetComponent<Animator>();
+        depleteOxygen = GetComponent<DepleteOxygen>();
+        asPlayer = GetComponent<AudioSource>();
+    }
 
+    void FixedUpdate()
+    {
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        float Vertical = Input.GetAxisRaw("Vertical");
+        Vector3 direction = new Vector3(horizontal, 0f, Vertical).normalized;
+        //Normalized to avoid accelerating if using two keys together
+        //explained in Brackeys video
+
+        if (direction.magnitude >= 0.1f && !gameOver)
+        {
+            animPlayer.SetBool("isWalking", true);
+            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
+            // Calculation so that player will move forward based on rotation and player will turn where camera faces
+            // Angle in radians, convert to degrees, get angle
+            float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
+            // To smooth angles and make less snappy
+            transform.rotation = Quaternion.Euler(0f, angle, 0f);
+
+            Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+            rb.MovePosition(transform.position + (moveDir.normalized * walkSpeed * Time.deltaTime));
+
+            bool runPressed = Input.GetKey(KeyCode.LeftShift);
+
+            if (runPressed && !gameOver)
+            {
+                rb.MovePosition(transform.position + (moveDir.normalized * runSpeed * Time.deltaTime));
+                animPlayer.SetBool("isRunning", true);
+            }
+            if (!runPressed)
+            {
+                animPlayer.SetBool("isRunning", false);
+            }
+        }
+
+        else if (direction.magnitude <= 0.1f)
+        {
+            animPlayer.SetBool("isWalking", false);
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        horizontalInput = Input.GetAxis("Horizontal");
-        verticalInput = Input.GetAxis("Vertical");
+        
+        //jump
+        if (IsGrounded() && Input.GetKeyDown(KeyCode.Space) && !gameOver)
+        {
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            // Impulse adds amount of force once
+            asPlayer.Play();
+            //animPlayer.SetTrigger("Jump");
+        }
 
-        //move duck forward
-        transform.Translate(Vector3.forward * Time.deltaTime * speed * verticalInput);
+        if (!IsGrounded())
+        {
+            animPlayer.SetBool("isWalking", false);
+            animPlayer.SetBool("isRunning", false);
+        }
 
-        //turn the duck. I don't know how to improve the speed when turning, the speed needs to be 100 or greater to work well
-        transform.Rotate(Vector3.up, Time.deltaTime * turnSpeed * horizontalInput);
+        if (depleteOxygen.curOxygen <=0)
+        {
+            gameOver = true;
+            Debug.Log("Game Over!");
+            blackHoleParticle.Stop();
+            hasBlackHole = false;
+            animPlayer.SetBool("isWalking", false);
+            animPlayer.SetBool("isRunning", false);
+            asPlayer.Pause();
+            //Game Over Parameters
+        }
+        
+        /*if(!IsGrounded())
+        {
+            animPlayer.SetTrigger("Fall");
+        }*/
+        //for falling animation
+        /* if (IsGrounded())
+         {
+            animPlayer.SetTrigger("Land");
+         }*/
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("BlackHole"))
+        {
+            hasBlackHole = true;
+            Destroy(other.gameObject);
+            StartCoroutine(BlackHoleCountDown());
+            blackHoleParticle.Play();
+        }
+    }
+
+    private bool IsGrounded()
+    {
+        return Physics.CheckCapsule(col.bounds.center, new Vector3(col.bounds.center.x,
+            col.bounds.min.y, col.bounds.center.z), col.radius * .9f, groundLayers);
+    }
+
+    IEnumerator BlackHoleCountDown()
+    {
+        yield return new WaitForSeconds(8);
+        hasBlackHole = false;
+        blackHoleParticle.Stop();
     }
 }
