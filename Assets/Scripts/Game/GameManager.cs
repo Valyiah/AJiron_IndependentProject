@@ -37,6 +37,7 @@ public class GameManager : MonoBehaviour
 
             if (starShards[0] == null && starShards[1] == null && starShards[2] == null && starShards[3] == null && playerScript.triggerEntered == true)
             {
+
                 Debug.Log("You got all the Stars!");
             }
         }
