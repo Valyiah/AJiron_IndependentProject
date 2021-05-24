@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-   // Used script from a Brackeys video but adjusted to use the Rigidbody instead
+    // Used script from a Brackeys video but adjusted to use the Rigidbody instead
     // of a character controller alongside Cinemachine for the camera.
     // Link: https://www.youtube.com/watch?v=4HpC--2iowE
     // Jump is the same as the Lesson Unit 3 but with a different Ground detection, using Physics.CheckCapsule
@@ -17,7 +17,6 @@ public class PlayerController : MonoBehaviour
     private Animator animPlayer;
     public DepleteOxygen depleteOxygen;
 
-    public ParticleSystem blackHoleParticle;
     private AudioSource asPlayer;
 
     public LayerMask groundLayers;
@@ -28,8 +27,8 @@ public class PlayerController : MonoBehaviour
     public float jumpForce = 7.0f;
 
     float turnSmoothVelocity;
-    public bool hasBlackHole = false;
     public bool gameOver = false;
+    public bool triggerEntered = false;
 
     void Start()
     {
@@ -38,6 +37,7 @@ public class PlayerController : MonoBehaviour
         animPlayer = GetComponent<Animator>();
         depleteOxygen = GetComponent<DepleteOxygen>();
         asPlayer = GetComponent<AudioSource>();
+
     }
 
     void FixedUpdate()
@@ -50,7 +50,7 @@ public class PlayerController : MonoBehaviour
 
         if (direction.magnitude >= 0.1f && !gameOver)
         {
-            animPlayer.SetBool("isWalking", true);
+            animPlayer.SetBool("isWalking", true); //Walk animation
             float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
             // Calculation so that player will move forward based on rotation and player will turn where camera faces
             // Angle in radians, convert to degrees, get angle
@@ -59,31 +59,32 @@ public class PlayerController : MonoBehaviour
             transform.rotation = Quaternion.Euler(0f, angle, 0f);
 
             Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+            //The actual turn movement
             rb.MovePosition(transform.position + (moveDir.normalized * walkSpeed * Time.deltaTime));
-
+            //Movement with WASD
             bool runPressed = Input.GetKey(KeyCode.LeftShift);
 
             if (runPressed && !gameOver)
             {
                 rb.MovePosition(transform.position + (moveDir.normalized * runSpeed * Time.deltaTime));
-                animPlayer.SetBool("isRunning", true);
+                //Running Speed
+                animPlayer.SetBool("isRunning", true); //Running Animation
             }
             if (!runPressed)
             {
-                animPlayer.SetBool("isRunning", false);
+                animPlayer.SetBool("isRunning", false); //Stop Running Animation
             }
         }
 
-        else if (direction.magnitude <= 0.1f)
+        else if (direction.magnitude <= 0.1f) //If not moving
         {
-            animPlayer.SetBool("isWalking", false);
+            animPlayer.SetBool("isWalking", false); //Stop Walk Animation
         }
     }
 
     // Update is called once per frame
     void Update()
     {
-        
         //jump
         if (IsGrounded() && Input.GetKeyDown(KeyCode.Space) && !gameOver)
         {
@@ -103,33 +104,28 @@ public class PlayerController : MonoBehaviour
         {
             gameOver = true;
             Debug.Log("Game Over!");
-            blackHoleParticle.Stop();
-            hasBlackHole = false;
             animPlayer.SetBool("isWalking", false);
             animPlayer.SetBool("isRunning", false);
             asPlayer.Pause();
             //Game Over Parameters
         }
-        
-        /*if(!IsGrounded())
-        {
-            animPlayer.SetTrigger("Fall");
-        }*/
-        //for falling animation
-        /* if (IsGrounded())
-         {
-            animPlayer.SetTrigger("Land");
-         }*/
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("BlackHole"))
+        if (other.gameObject.tag == "Eggship")
         {
-            hasBlackHole = true;
-            Destroy(other.gameObject);
-            StartCoroutine(BlackHoleCountDown());
-            blackHoleParticle.Play();
+            triggerEntered = true;
+            Debug.Log("Entered");
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.tag == "Eggship")
+        {
+            triggerEntered = false;
+            Debug.Log("Exited");
         }
     }
 
@@ -137,12 +133,5 @@ public class PlayerController : MonoBehaviour
     {
         return Physics.CheckCapsule(col.bounds.center, new Vector3(col.bounds.center.x,
             col.bounds.min.y, col.bounds.center.z), col.radius * .9f, groundLayers);
-    }
-
-    IEnumerator BlackHoleCountDown()
-    {
-        yield return new WaitForSeconds(8);
-        hasBlackHole = false;
-        blackHoleParticle.Stop();
     }
 }

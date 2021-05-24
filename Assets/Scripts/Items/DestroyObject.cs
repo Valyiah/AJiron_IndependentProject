@@ -6,7 +6,11 @@ public class DestroyObject : MonoBehaviour
 {
     void OnTriggerEnter(Collider other)
     {
-        Destroy(gameObject);
-        //Destroys the pick ups collected
+        if(other.CompareTag("Player"))
+        {
+            Destroy(gameObject);
+            //Destroys the pick ups collected
+        }
+
     }
 }

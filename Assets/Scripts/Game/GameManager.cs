@@ -2,11 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class StarShards : MonoBehaviour
+public class GameManager : MonoBehaviour
 {
     public GameObject[] starShards;
+    public GameObject player;
+    private PlayerController playerScript;
+    //public bool win;
+    //public bool lose;
 
-    // Update is called once per frame
+    private void Start()
+    {
+        playerScript = player.GetComponent<PlayerController>();
+    }
+
+    //Update is called once per frame
     void Update()
     {
         CheckArray();
@@ -23,10 +32,9 @@ public class StarShards : MonoBehaviour
             else if (starShards[i] != null)
             {
                 Debug.Log("Not Empty: " + i);
-            }
-            // checks each array element individually
+            } //checks each array element individually
 
-            if (starShards[0] == null && starShards[1] == null && starShards[2] == null && starShards[3] == null)
+            if (starShards[0] == null && starShards[1] == null && starShards[2] == null && starShards[3] == null && playerScript.triggerEntered == true)
             {
                 Debug.Log("You got all the Stars!");
             }
