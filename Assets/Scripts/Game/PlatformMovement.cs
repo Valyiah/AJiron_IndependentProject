@@ -6,7 +6,7 @@ public class PlatformMovement : MonoBehaviour
 {
     //With help from youtuber Dogma427
     //Link: https://www.youtube.com/watch?v=Ig4Gsm1QwoU
-    //Changed a few things to fit my game
+    //Changed a few things to fit my game like the on trigger stay and exit
 
     public float speed;
     public Transform startPoint, endPoint;

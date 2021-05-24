@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -39,6 +40,11 @@ public class GameManager : MonoBehaviour
                 Debug.Log("You got all the Stars!");
             }
         }
+    }
+
+    public void RestartGame()
+    {
+        SceneManager.LoadScene("Astroduck");
     }
 
     /* After trying to figure out how to process the array as one instead of 
