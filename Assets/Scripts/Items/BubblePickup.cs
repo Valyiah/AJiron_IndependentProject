@@ -9,7 +9,7 @@ public class BubblePickup : MonoBehaviour
 
     DepleteOxygen depleteOxygen;
 
-    public float bubbleBonus = 50f;
+    public float bubbleBonus = 40f;
     //Oxgyen bubbles will restore 50 points
 
     private void Awake()
@@ -24,7 +24,7 @@ public class BubblePickup : MonoBehaviour
         {
             Destroy(gameObject);
             depleteOxygen.curOxygen = depleteOxygen.curOxygen + bubbleBonus;
-            //adds the bubble bonus of 50 points to the current oxygen level
+            //adds the bubble bonus of 40 points to the current oxygen level
         }
     }
 }
