@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
@@ -16,8 +17,12 @@ public class PlayerController : MonoBehaviour
     public Transform cam;
     private Animator animPlayer;
     public DepleteOxygen depleteOxygen;
+    public GameObject gameOverMenu;
 
     private AudioSource asPlayer;
+    public AudioClip jumpSound;
+    public AudioClip collectStarSound;
+    public AudioClip bubblePop;
 
     public LayerMask groundLayers;
 
@@ -30,6 +35,12 @@ public class PlayerController : MonoBehaviour
     public bool gameOver = false;
     public bool triggerEntered = false;
 
+    public int starsCollected;
+    public int numOfStars;
+    public Image[] stars;
+    public Sprite fullStar;
+    public Sprite emptyStar;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -37,7 +48,6 @@ public class PlayerController : MonoBehaviour
         animPlayer = GetComponent<Animator>();
         depleteOxygen = GetComponent<DepleteOxygen>();
         asPlayer = GetComponent<AudioSource>();
-
     }
 
     void FixedUpdate()
@@ -90,8 +100,7 @@ public class PlayerController : MonoBehaviour
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             // Impulse adds amount of force once
-            asPlayer.Play();
-            //animPlayer.SetTrigger("Jump");
+            asPlayer.PlayOneShot(jumpSound, 1f);
         }
 
         if (!IsGrounded())
@@ -103,11 +112,36 @@ public class PlayerController : MonoBehaviour
         if (depleteOxygen.curOxygen <=0)
         {
             gameOver = true;
-            Debug.Log("Game Over!");
+        }
+
+        if (gameOver == true)
+        {
+            gameOverMenu.SetActive(true);
+            depleteOxygen.curOxygen = 0;
             animPlayer.SetBool("isWalking", false);
             animPlayer.SetBool("isRunning", false);
             asPlayer.Pause();
             //Game Over Parameters
+        }
+
+        for (int i = 0; i < stars.Length; i++)
+        {
+            if(i < starsCollected)
+            {
+                stars[i].sprite = fullStar;
+            }
+            else
+            {
+                stars[i].sprite = emptyStar;
+            }
+            if(i < numOfStars)
+            {
+                stars[i].enabled = true;
+            }
+            else
+            {
+                stars[i].enabled = false;
+            }
         }
     }
 
@@ -116,7 +150,24 @@ public class PlayerController : MonoBehaviour
         if (other.gameObject.tag == "Eggship")
         {
             triggerEntered = true;
-            Debug.Log("Entered");
+        }
+
+        if (other.gameObject.tag == "OutOfBounds")
+        {
+            gameOver = true;
+            gameObject.GetComponent<Rigidbody>().useGravity = false;
+            //To stop the player from falling forever
+        }
+        
+        if(other.gameObject.tag == "Star")
+        {
+            starsCollected += 1;
+            asPlayer.PlayOneShot(collectStarSound);
+        }
+
+        if(other.gameObject.tag == "Bubble")
+        {
+            asPlayer.PlayOneShot(bubblePop);
         }
     }
 
@@ -125,11 +176,10 @@ public class PlayerController : MonoBehaviour
         if (other.gameObject.tag == "Eggship")
         {
             triggerEntered = false;
-            Debug.Log("Exited");
         }
     }
 
-    private bool IsGrounded()
+    public bool IsGrounded()
     {
         return Physics.CheckCapsule(col.bounds.center, new Vector3(col.bounds.center.x,
             col.bounds.min.y, col.bounds.center.z), col.radius * .9f, groundLayers);

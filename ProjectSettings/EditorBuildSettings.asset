@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/Title Menu.unity
+    guid: 750db8e0df8540d45a3a298237124278
+  - enabled: 1
     path: Assets/Scenes/Astroduck.unity
     guid: 8c6f670568429884da70981ceb16ea7c
   m_configObjects: {}

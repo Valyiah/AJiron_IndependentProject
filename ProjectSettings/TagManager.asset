@@ -9,6 +9,9 @@ TagManager:
   - GameManager
   - ShootingStar
   - Eggship
+  - OutOfBounds
+  - Star
+  - Bubble
   layers:
   - Default
   - TransparentFX

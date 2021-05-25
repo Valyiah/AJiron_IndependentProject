@@ -8,12 +8,6 @@ public class Shoot : MonoBehaviour
 
     private float edgeOfScene = -500.0f;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
     // Update is called once per frame
     void Update()
     {
@@ -22,7 +16,6 @@ public class Shoot : MonoBehaviour
         if (transform.position.z < edgeOfScene)
         {
             Destroy(gameObject);
-            Debug.Log("Shooting Star Destroyed!");
         }
     }
 }

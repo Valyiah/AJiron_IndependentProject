@@ -8,12 +8,23 @@ public class GameManager : MonoBehaviour
     public GameObject[] starShards;
     public GameObject player;
     private PlayerController playerScript;
-    //public bool win;
-    //public bool lose;
+
+    public GameObject winMenu;
+    
+    public bool win;
+
+    public AudioSource levelMusic;
+    public AudioSource loseMusic;
+    public AudioSource winMusic;
+
+    public bool levelSong = true;
+    public bool loseSong = false;
+    public bool winSong = false;
 
     private void Start()
     {
         playerScript = player.GetComponent<PlayerController>();
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     //Update is called once per frame
@@ -26,26 +37,72 @@ public class GameManager : MonoBehaviour
     {
         for (int i = 0; i < starShards.Length; i++)
         {
-            if (starShards[i] == null)
-            {
-                Debug.Log("Empty!: " + i);
-            }
-            else if (starShards[i] != null)
-            {
-                Debug.Log("Not Empty: " + i);
-            } //checks each array element individually
-
             if (starShards[0] == null && starShards[1] == null && starShards[2] == null && starShards[3] == null && playerScript.triggerEntered == true)
             {
-
-                Debug.Log("You got all the Stars!");
+                winMenu.SetActive(true);
+                WinMusic();
+                Cursor.lockState = CursorLockMode.None;
+                playerScript.walkSpeed = 0;
+                playerScript.runSpeed = 0;
             }
+        }
+
+        if (playerScript.gameOver == true)
+        {
+            LoseMusic();
         }
     }
 
     public void RestartGame()
     {
         SceneManager.LoadScene("Astroduck");
+    }
+
+    public void MainMenu()
+    {
+        SceneManager.LoadScene("Title Menu");
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
+
+    public void LevelMusic()
+    {
+        levelSong = true;
+        loseSong = false;
+        winSong = false;
+        levelMusic.Play();
+    }
+
+    public void LoseMusic()
+    {
+        if (levelMusic.isPlaying)
+            levelSong = false;
+        {
+            levelMusic.Stop();
+        }
+        if(!loseMusic.isPlaying && loseSong == false)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            loseMusic.Play();
+            loseSong = true;
+        }
+    }
+
+    public void WinMusic()
+    {
+        if (levelMusic.isPlaying)
+            levelSong = false;
+        {
+            levelMusic.Stop();
+        }
+        if (!winMusic.isPlaying && winSong == false)
+        {
+            winMusic.Play();
+            winSong = true;
+        }
     }
 
     /* After trying to figure out how to process the array as one instead of 
